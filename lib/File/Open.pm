@@ -1,0 +1,289 @@
+package File::Open;
+
+use warnings; use warnings FATAL => qw(layer);
+use strict;
+
+our $VERSION = '0.02';
+
+use File::Basename qw(basename);
+use Carp qw(croak);
+use Fcntl ();
+use Exporter qw(import);
+
+our @EXPORT;
+our @EXPORT_OK = qw(fopen fopen_nothrow fsysopen fsysopen_nothrow);
+
+sub _mode {
+	map { $_ => $_[0] } @_
+}
+
+my %modemap = (
+	_mode(qw[< r]),
+	_mode(qw[> w]),
+	_mode(qw[>> a]),
+	_mode(qw[+< r+]),
+	_mode(qw[+> w+]),
+	_mode(qw[+>> a+]),
+);
+
+sub _open {
+	my ($func, $file, $mode, $layers) = @_;
+	@_ < 2 and croak "Not enough arguments for $func";
+	@_ > 4 and croak "Too many arguments for $func";
+	defined $mode or $mode = '<';
+	my $b = substr($mode, 1) =~ s/b//;
+	my $emode = $modemap{$mode} or croak "Unknown $func() mode '$mode'";
+
+	open my $fh, $emode, $file or return undef;
+	binmode $fh if $b;
+	binmode $fh, $layers if defined $layers;
+	$fh
+}
+
+sub fopen_nothrow {
+	unshift @_, 'fopen_nothrow';
+	&_open
+}
+
+my $prog = basename $0;
+
+sub fopen {
+	unshift @_, 'fopen';
+	&_open || die "$prog: $_[1]: $!\n"
+}
+
+sub _sysopen {
+	my ($func, $file, $mode, $flags) = @_;
+	@_ < 3 and croak "Not enough arguments for $func";
+	@_ > 4 and croak "Too many arguments for $func";
+
+	my $emode =
+		$mode eq 'r' ? Fcntl::O_RDONLY :
+		$mode eq 'w' ? Fcntl::O_WRONLY :
+		$mode eq 'rw' ? Fcntl::O_RDWR :
+		croak "Unknown $func() mode '$mode'"
+	;
+
+	my $perms = 0;
+	defined $flags or $flags = {};
+
+	for my $k (keys %$flags) {
+		my $v = !!$flags->{$k};
+		$emode |=
+			$k eq 'creat' ?
+				defined $flags->{$k} ? do {
+					$perms = $flags->{$k};
+					Fcntl::O_CREAT()
+				} :
+				0
+			:
+			$k eq 'append'    ? $v && Fcntl::O_APPEND()    :
+			$k eq 'async'     ? $v && Fcntl::O_ASYNC()     :
+			$k eq 'direct'    ? $v && Fcntl::O_DIRECT()    :
+			$k eq 'directory' ? $v && Fcntl::O_DIRECTORY() :
+			$k eq 'excl'      ? $v && Fcntl::O_EXCL()      :
+			$k eq 'noatime'   ? $v && Fcntl::O_NOATIME()   :
+			$k eq 'noctty'    ? $v && Fcntl::O_NOCTTY()    :
+			$k eq 'nofollow'  ? $v && Fcntl::O_NOFOLLOW()  :
+			$k eq 'nonblock'  ? $v && Fcntl::O_NONBLOCK()  :
+			$k eq 'sync'      ? $v && Fcntl::O_SYNC()      :
+			$k eq 'trunc'     ? $v && Fcntl::O_TRUNC()     :
+			croak "Unknown $func() flag '$k'"
+		;
+	}
+
+	sysopen my $fh, $file, $emode, $perms or return undef;
+	$fh
+}
+
+sub fsysopen_nothrow {
+	unshift @_, 'fsysopen_nothrow';
+	&_sysopen
+}
+
+sub fsysopen {
+	unshift @_, 'fsysopen';
+	&_sysopen || die "$prog: $_[1]: $!\n"
+}
+
+
+'ok'
+
+__END__
+
+=head1 NAME
+
+File::Open - wrap open/sysopen and give them a nice and simple interface
+
+=head1 SYNOPSIS
+
+ use File::Open qw(fopen fopen_nothrow fsysopen fsysopen_nothrow);
+
+ my $fh = fopen $file;
+ my $fh = fopen $file, $mode;
+ my $fh = fopen $file, $mode, $layers;
+
+ my $fh = fopen_nothrow $file or die "$0: $file: $!\n";
+ my $fh = fopen_nothrow $file, $mode or die "$0: $file: $!\n";
+ my $fh = fopen_nothrow $file, $mode, $layers or die "$0: $file: $!\n";
+
+ my $fh = fsysopen $file, $mode;
+ my $fh = fsysopen $file, $mode, \%flags;
+
+ my $fh = fsysopen_nothrow $file, $mode or die "$0: $file: $!\n";
+ my $fh = fsysopen_nothrow $file, $mode, \%flags or die "$0: $file: $!\n";
+
+=head1 DESCRIPTION
+
+This module provides convenience wrappers around L<open|perlfunc/open> and
+L<sysopen|perlfunc/sysopen> for opening simple files. Nothing is exported by
+default; you have to specify every function you want to import explicitly.
+
+=head2 Functions
+
+=over
+
+=item fopen FILE
+
+=item fopen FILE, MODE
+
+=item fopen FILE, MODE, LAYERS
+
+Opens FILE and returns a filehandle. If the open fails, it throws an exception
+of the form C<"$program: $filename: $!\n">.
+
+MODE is a string specifying how the file should be opened. The following values
+are supported:
+
+=over
+
+=item C<'r'>, C<'E<lt>'>
+
+Open the file for reading.
+
+=item C<'w'>, C<'E<gt>'>
+
+Open the file for writing. If the file exists, wipe out its contents and make
+it empty; if it doesn't exist, create it.
+
+=item C<'a'>, C<'E<gt>E<gt>'>
+
+Open the file for appending. If the file doesn't exist, create it. All writes
+will go to the end of the file.
+
+=item C<'r+'>, C<'+E<lt>'>
+
+Open the file for reading (like C<'r'>) but also allow writes.
+
+=item C<'w+'>, C<'+E<gt>'>
+
+Open the file for writing (like C<'w'>) but also allow reads.
+
+=item C<'a+'>, C<'+E<gt>E<gt>'>
+
+Open the file for appending (like C<'a'>) but also allow reads.
+
+=back
+
+In addition you can append a C<'b'> to each of the mode strings listed above.
+This will cause L<binmode|perlfunc/binmode> to be called on the filehandle.
+
+If you don't specify a MODE, it defaults to C<'r'>.
+
+If you pass LAYERS, C<fopen> will call C<binmode $fh, LAYERS> on the newly
+opened filehandle. This gives you greater control than the simple C<'b'> in
+MODE.
+
+=item fopen_nothrow FILE
+
+=item fopen_nothrow FILE, MODE
+
+=item fopen_nothrow FILE, MODE, LAYERS
+
+Works exactly like L<fopen|/"fopen FILE"> but if the open fails it simply
+returns C<undef>.
+
+=item fsysopen FILE, MODE
+
+=item fsysopen FILE, MODE, FLAGS
+
+Uses the more low-level interface of L<sysopen|perlfunc/sysopen> to open FILE.
+If it succeeds, it returns a filehandle; if it fails, it throws an exception of
+the form C<"$program: $filename: $!\n">.
+
+MODE must be C<'r'>, C<'w'>, or C<'rw'> to open the file for reading, writing,
+or both reading and writing, respectively (this corresponds to the open flags
+C<O_RDONLY>, C<O_WRONLY>, and C<O_RDWR>).
+
+You can pass additional flags in FLAGS, which must be a hash reference. The
+hash keys are strings (specifying the flag) and the values are booleans
+(indicating whether the flag should be off (default) or on) - with one
+exception. The exception is the C<'creat'> flag; if set, its value must be a
+number that specifies the permissions of the newly created file. See
+L<perlfunc/umask> for details.
+
+The following flags are recognized:
+
+=over
+
+=item C<'append'> - sets C<O_APPEND>
+
+=item C<'async'> - sets C<O_ASYNC>
+
+=item C<'creat'> - sets C<O_CREAT> and specifies file permissions
+
+=item C<'direct'> - sets C<O_DIRECT>
+
+=item C<'directory'> - sets C<O_DIRECTORY>
+
+=item C<'excl'> - sets C<O_EXCL>
+
+=item C<'noatime'> - sets C<O_NOATIME>
+
+=item C<'noctty'> - sets C<O_NOCTTY>
+
+=item C<'nofollow'> - sets C<O_NOFOLLOW>
+
+=item C<'nonblock'> - sets C<O_NONBLOCK>
+
+=item C<'sync'> - sets C<O_SYNC>
+
+=item C<'trunc'> - sets C<O_TRUNC>
+
+=back
+
+See L<Fcntl> and L<open(2)> for the meaning of these flags. Some of them may
+not exist on your system; in that case you'll get a runtime exception when you
+try to specify a non-existent flag.
+
+=item fsysopen_nothrow FILE, MODE
+
+=item fsysopen_nothrow FILE, MODE, FLAGS
+
+Works exactly like L<fsysopen|/"fsysopen FILE, MODE"> but if the sysopen fails
+it simply returns C<undef>.
+
+=back
+
+=head1 SEE ALSO
+
+L<perlfunc/open>,
+L<perlfunc/binmode>,
+L<perlfunc/sysopen>,
+L<Fcntl>,
+L<perlopentut>,
+L<open(2)>
+
+=head1 AUTHOR
+
+Lukas Mai, C<< <l.mai at web.de> >>
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2011 Lukas Mai.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See L<http://dev.perl.org/licenses/> for more information.
