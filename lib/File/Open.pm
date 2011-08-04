@@ -31,7 +31,7 @@ sub _open {
 	@_ < 2 and croak "Not enough arguments for $func";
 	@_ > 4 and croak "Too many arguments for $func";
 	defined $mode or $mode = '<';
-	my $b = substr($mode, 1) =~ s/b//;
+	my $b = $mode =~ s/(?<=.)b//;
 	my $emode = $modemap{$mode} or croak "Unknown $func() mode '$mode'";
 
 	open my $fh, $emode, $file or return undef;
