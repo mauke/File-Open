@@ -6,3 +6,6 @@ README
 t/00-load.t
 t/pod-coverage.t
 t/pod.t
+t/corners.t
+t/open.t
+t/pollute.t
