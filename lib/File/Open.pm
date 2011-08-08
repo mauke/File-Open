@@ -3,7 +3,7 @@ package File::Open;
 use warnings; use warnings FATAL => qw(layer);
 use strict;
 
-our $VERSION = '0.02';
+our $VERSION = '0.021';
 
 use File::Basename qw(basename);
 use Carp qw(croak);
@@ -58,9 +58,9 @@ sub _sysopen {
 	@_ > 4 and croak "Too many arguments for $func";
 
 	my $emode =
-		$mode eq 'r' ? Fcntl::O_RDONLY :
-		$mode eq 'w' ? Fcntl::O_WRONLY :
-		$mode eq 'rw' ? Fcntl::O_RDWR :
+		$mode eq 'r' ? Fcntl::O_RDONLY() :
+		$mode eq 'w' ? Fcntl::O_WRONLY() :
+		$mode eq 'rw' ? Fcntl::O_RDWR() :
 		croak "Unknown $func() mode '$mode'"
 	;
 
