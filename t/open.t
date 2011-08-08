@@ -3,12 +3,21 @@ use strict;
 
 use Test::More tests => 89;
 
-use Dir::Self;
+use File::Spec;
 use Test::Fatal;
 
 use File::Open qw(fsysopen_nothrow fopen_nothrow fsysopen fopen);
 
-my $nofile = __DIR__ . '/I3XomCsu.txt';
+my $DIR = File::Spec->tmpdir;
+sub scratch {
+	File::Spec->catfile($DIR, $_[0])
+}
+
+my $stem = 'IeXomCsu';
+my $nofile;
+while (-e ($nofile = scratch "$stem.txt")) {
+	$stem++;
+}
 
 like $_, qr/\Q: $nofile: / for
 	exception { fopen $nofile },
@@ -40,7 +49,7 @@ is $_, undef for
 	fsysopen_nothrow($nofile, 'rw'),
 ;
 
-my $scratch = __DIR__ . '/SCRATCH.AAA';
+my $scratch = scratch 'SCRATCH.AAA';
 unlink $scratch;
 
 {

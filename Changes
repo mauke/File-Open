@@ -2,6 +2,7 @@ Revision history for File-Open
 
 0.021   2011-08-08
         Fix build failure on 5.8.
+        Don't rely on CWD being writable for testing.
 
 0.02    2011-08-04
         First version, released on an unsuspecting world.

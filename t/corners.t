@@ -4,11 +4,11 @@ use strict;
 use Test::More tests => 78;
 
 use Test::Fatal;
-use Dir::Self;
+use File::Spec;
 
 use File::Open qw(fopen fopen_nothrow fsysopen fsysopen_nothrow);
 
-my $file = __DIR__ . '/AAAAAAAA';
+my $file = File::Spec->catfile(File::Spec->tmpdir, 'AAAAAAAA');
 
 like $_, qr/^Not enough arguments / for
 	exception { fopen },
