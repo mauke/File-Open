@@ -1,6 +1,6 @@
 File-Open
 
-Load a few generally useful modules to save typing.
+Wrap open/sysopen and give them a nice and simple interface.
 
 
 INSTALLATION
