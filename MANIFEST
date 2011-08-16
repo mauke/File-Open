@@ -9,3 +9,4 @@ t/pod.t
 t/corners.t
 t/open.t
 t/pollute.t
+t/null.t

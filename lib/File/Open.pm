@@ -9,6 +9,7 @@ our $VERSION = '0.021';
 use File::Basename qw(basename);
 use Carp qw(croak);
 use Fcntl ();
+use Errno ();
 use Exporter qw(import);
 
 our @EXPORT;
@@ -34,6 +35,11 @@ sub _open {
 	defined $mode or $mode = '<';
 	my $b = $mode =~ s/(?<=.)b//;
 	my $emode = $modemap{$mode} or croak "Unknown $func() mode '$mode'";
+
+	if ($file =~ /\0/) {
+		$! = Errno::ENOENT() if exists &Errno::ENOENT;
+		return undef;
+	}
 
 	open my $fh, $emode, $file or return undef;
 	binmode $fh if $b;
@@ -91,6 +97,11 @@ sub _sysopen {
 			$k eq 'trunc'     ? $v && Fcntl::O_TRUNC()     :
 			croak "Unknown $func() flag '$k'"
 		;
+	}
+
+	if ($file =~ /\0/) {
+		$! = Errno::ENOENT() if exists &Errno::ENOENT;
+		return undef;
 	}
 
 	sysopen my $fh, $file, $emode, $perms or return undef;
