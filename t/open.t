@@ -3,21 +3,22 @@ use strict;
 
 use Test::More tests => 89;
 
-use File::Spec;
+use File::Spec qw(tempfile);
+use File::Temp;
 use Test::Fatal;
 
 use File::Open qw(fsysopen_nothrow fopen_nothrow fsysopen fopen);
 
-my $DIR = File::Spec->tmpdir;
+my $DIR = File::Temp->newdir('F_O_test.XXXXXX', CLEANUP => 1, EXLOCK => 0, TMPDIR => 1);
+-w $DIR or BAIL_OUT "$DIR: I can't test open() without a writeable temp directory";
+
 sub scratch {
-	File::Spec->catfile($DIR, $_[0])
+	my ($stem) = @_;
+	my $template = File::Spec->catfile($DIR, "$stem.XXXXXX");
+	File::Temp::mktemp($template)
 }
 
-my $stem = 'IeXomCsu';
-my $nofile;
-while (-e ($nofile = scratch "$stem.txt")) {
-	$stem++;
-}
+my $nofile = scratch "nosuchfile";
 
 like $_, qr/\Q: $nofile: / for
 	exception { fopen $nofile },
@@ -49,7 +50,7 @@ is $_, undef for
 	fsysopen_nothrow($nofile, 'rw'),
 ;
 
-my $scratch = scratch 'SCRATCH.AAA';
+my $scratch = scratch "scratch${\int rand 100}";
 unlink $scratch;
 
 my $token = "${\rand}-$$";

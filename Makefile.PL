@@ -20,6 +20,7 @@ WriteMakefile(
         'Test::More' => 0,
         'Test::Fatal' => 0,
         'File::Spec' => 0,
+        'File::Temp' => 0,
     },
     PREREQ_PM => {
         'warnings' => 0,
