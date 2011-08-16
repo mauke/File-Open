@@ -1,7 +1,8 @@
 package File::Open;
 
-use warnings; use warnings FATAL => qw(layer);
 use strict;
+use warnings;
+BEGIN { warnings->import(FATAL => 'layer') if $] >= 5.008; }
 
 our $VERSION = '0.021';
 
