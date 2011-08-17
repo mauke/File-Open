@@ -143,57 +143,63 @@ unlink $scratch;
 }
 unlink $scratch;
 
-{
-	my $fh = fsysopen $scratch, 'w', {creat => 0666, trunc => 1, excl => 1};
-	ok print $fh "$$ ${\rand}\n";
-	ok close $fh;
-} {
-	my $fh = fsysopen $scratch, 'w', {creat => 0, trunc => 1};
-	ok print $fh "$nofile\n";
-	ok close $fh;
-} {
-	my $fh = fsysopen $scratch, 'w';
-	ok close $fh;
-} {
-	like exception { fsysopen $scratch, 'w', {creat => 0666, excl => 1} }, qr/\Q: $scratch: /;
-} {
-	my $fh = fsysopen $scratch, 'w', {creat => 0, append => 1};
-	ok print $fh "$token\n$scratch\n";
-	ok close $fh;
-} {
-	my $fh = fsysopen $scratch, 'r';
-	my $data = do {local $/; readline $fh};
-	is $data, "$nofile\n$token\n$scratch\n";
-	ok close $fh;
+SKIP: {
+	{
+		my $fh = fsysopen $scratch, 'w', {creat => 0666, trunc => 1, excl => 1};
+		ok print $fh "$$ ${\rand}\n";
+		ok close $fh;
+	} {
+		skip "O_CREAT|O_TRUNC is broken on windows", 8 if $^O eq 'MSWin32';
+		my $fh = fsysopen $scratch, 'w', {creat => 0, trunc => 1};
+		ok print $fh "$nofile\n";
+		ok close $fh;
+	} {
+		my $fh = fsysopen $scratch, 'w';
+		ok close $fh;
+	} {
+		like exception { fsysopen $scratch, 'w', {creat => 0666, excl => 1} }, qr/\Q: $scratch: /;
+	} {
+		my $fh = fsysopen $scratch, 'w', {creat => 0, append => 1};
+		ok print $fh "$token\n$scratch\n";
+		ok close $fh;
+	} {
+		my $fh = fsysopen $scratch, 'r';
+		my $data = do {local $/; readline $fh};
+		is $data, "$nofile\n$token\n$scratch\n";
+		ok close $fh;
+	}
 }
 unlink $scratch;
 
-{
-	my $fh = fsysopen_nothrow $scratch, 'w', {creat => 0666, trunc => 1, excl => 1};
-	ok $fh;
-	ok print $fh "$$ ${\rand}\n";
-	ok close $fh;
-} {
-	my $fh = fsysopen_nothrow $scratch, 'w', {creat => 0, trunc => 1};
-	ok $fh;
-	ok print $fh "$nofile\n";
-	ok close $fh;
-} {
-	my $fh = fsysopen_nothrow $scratch, 'w';
-	ok $fh;
-	ok close $fh;
-} {
-	ok !fsysopen_nothrow $scratch, 'w', {creat => 0666, excl => 1};
-} {
-	my $fh = fsysopen_nothrow $scratch, 'w', {creat => 0, append => 1};
-	ok $fh;
-	ok print $fh "$token\n$scratch\n";
-	ok close $fh;
-} {
-	my $fh = fsysopen_nothrow $scratch, 'r';
-	ok $fh;
-	my $data = do {local $/; readline $fh};
-	is $data, "$nofile\n$token\n$scratch\n";
-	ok close $fh;
+SKIP: {
+	{
+		my $fh = fsysopen_nothrow $scratch, 'w', {creat => 0666, trunc => 1, excl => 1};
+		ok $fh;
+		ok print $fh "$$ ${\rand}\n";
+		ok close $fh;
+	} {
+		skip "O_CREAT|O_TRUNC is broken on windows", 12 if $^O eq 'MSWin32';
+		my $fh = fsysopen_nothrow $scratch, 'w', {creat => 0, trunc => 1};
+		ok $fh;
+		ok print $fh "$nofile\n";
+		ok close $fh;
+	} {
+		my $fh = fsysopen_nothrow $scratch, 'w';
+		ok $fh;
+		ok close $fh;
+	} {
+		ok !fsysopen_nothrow $scratch, 'w', {creat => 0666, excl => 1};
+	} {
+		my $fh = fsysopen_nothrow $scratch, 'w', {creat => 0, append => 1};
+		ok $fh;
+		ok print $fh "$token\n$scratch\n";
+		ok close $fh;
+	} {
+		my $fh = fsysopen_nothrow $scratch, 'r';
+		ok $fh;
+		my $data = do {local $/; readline $fh};
+		is $data, "$nofile\n$token\n$scratch\n";
+		ok close $fh;
+	}
 }
 unlink $scratch;
