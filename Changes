@@ -1,5 +1,7 @@
 Revision history for File-Open
 
+{{ $NEXT }}
+
 0.031   2011-08-17
         Skip failing tests on windows.
         Switch to Dist::Zilla.
