@@ -1,5 +1,8 @@
 Revision history for File-Open
 
+0.032   2013-05-14
+        A bit more documentation for layers and methods.
+
 0.031   2011-08-17
         Skip failing tests on windows.
         Switch to Dist::Zilla.

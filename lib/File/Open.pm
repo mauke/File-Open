@@ -4,7 +4,7 @@ use strict;
 use warnings;
 BEGIN { warnings->import(FATAL => 'layer') if $] >= 5.008; }
 
-*VERSION = \'0.031';
+*VERSION = \'0.032';
 
 use File::Basename qw(basename);
 use Carp qw(croak);
@@ -325,7 +325,7 @@ Lukas Mai, C<< <l.mai at web.de> >>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2011 Lukas Mai.
+Copyright 2011, 2013 Lukas Mai.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
