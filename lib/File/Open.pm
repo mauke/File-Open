@@ -204,7 +204,15 @@ If you don't specify a MODE, it defaults to C<'r'>.
 
 If you pass LAYERS, C<fopen> will call C<binmode $fh, LAYERS> on the newly
 opened filehandle. This gives you greater control than the simple C<'b'> in
-MODE.
+MODE. For example, to read from a UTF-8 file:
+
+  my $fh = fopen $file, 'r', ':encoding(UTF-8)';
+  while (my $line = readline $fh) {
+      ...
+  }
+
+See L<PerlIO> and L<Encode::Supported> for a list of available layers and
+encoding names, respectively.
 
 =item fopen_nothrow FILE
 
@@ -277,13 +285,38 @@ it simply returns C<undef>.
 
 =back
 
+=head2 Methods
+
+The returned filehandles behave like L<IO::Handle> objects (actually
+L<IO::File> objects, which is a subclass of L<IO::Handle>). However, on perl
+versions before 5.14.0 you have to C<use IO::Handle;> manually before you can
+call any methods on them. (Current perl versions will do this for you
+automatically but it doesn't hurt to load L<IO::Handle> anyway.)
+
+Here is a toy example that copies all lines from one file to another, using
+method calls instead of functions:
+
+  use File::Open qw(fopen);
+  use IO::Handle;  # not needed on 5.14+
+ 
+  my $fh_in  = fopen $file_in,  'r';
+  my $fh_out = fopen $file_out, 'w';
+ 
+  while (defined(my $line = $fh_in->getline)) {
+      $fh_out->print($line) or die "$0: $file_out: $!\n";
+  }
+ 
+  $fh_out->close or die "$0: $file_out: $!\n";
+  $fh_in->close;
+
 =head1 SEE ALSO
 
 L<perlfunc/open>,
 L<perlfunc/binmode>,
 L<perlfunc/sysopen>,
-L<Fcntl>,
 L<perlopentut>,
+L<IO::Handle>,
+L<Fcntl>,
 L<open(2)>
 
 =head1 AUTHOR
