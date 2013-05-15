@@ -1,5 +1,8 @@
 Revision history for File-Open
 
+0.100   2013-05-15
+        Support default layers set with 'use open'.
+
 0.032   2013-05-14
         A bit more documentation for layers and methods.
 
