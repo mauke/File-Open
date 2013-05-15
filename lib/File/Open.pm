@@ -41,9 +41,15 @@ sub _open {
 		return undef;
 	}
 
-	open my $fh, $emode, $file or return undef;
+	unless (defined $layers) {
+		# grab our caller's 'use open' settings
+		my $hints = (caller 1)[10];
+		my $key = $emode =~ />/ ? 'open>' : 'open<';
+		$layers = $hints->{$key};
+	}
+
+	open my $fh, $emode . (defined $layers ? " $layers" : ''), $file or return undef;
 	binmode $fh if $b;
-	binmode $fh, $layers if defined $layers;
 	$fh
 }
 
@@ -202,17 +208,27 @@ This will cause L<binmode|perlfunc/binmode> to be called on the filehandle.
 
 If you don't specify a MODE, it defaults to C<'r'>.
 
-If you pass LAYERS, C<fopen> will call C<binmode $fh, LAYERS> on the newly
-opened filehandle. This gives you greater control than the simple C<'b'> in
-MODE. For example, to read from a UTF-8 file:
+If you pass LAYERS, C<fopen> will combine it with the open mode in the
+underlying L<open|perlfunc/open> call. This gives you greater control than the
+simple C<'b'> in MODE (which is equivalent to passing C<:raw> as LAYERS). For
+example, to read from a UTF-8 file:
 
   my $fh = fopen $file, 'r', ':encoding(UTF-8)';
+  # does
+  #   open my $fh, '<:encoding(UTF-8)', $file
+  # under the covers
+ 
   while (my $line = readline $fh) {
       ...
   }
 
 See L<PerlIO> and L<Encode::Supported> for a list of available layers and
 encoding names, respectively.
+
+If you don't pass LAYERS, C<fopen> will use the default layers set via
+C<use open ...>, if any (see L<open>). Default layers aren't supported on old
+perls (i.e. anything before 5.10.0); on those you'll have to pass an explicit
+LAYERS argument.
 
 =item fopen_nothrow FILE
 
