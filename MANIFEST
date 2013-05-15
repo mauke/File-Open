@@ -1,0 +1,12 @@
+Changes
+MANIFEST
+MANIFEST.SKIP
+Makefile.PL
+README
+lib/File/Open.pm
+t/00-load.t
+t/corners.t
+t/null.t
+t/open-func.t
+t/open-meth.t
+t/pollute.t

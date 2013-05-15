@@ -1,2 +1,11 @@
-File-Open-*
+MANIFEST.bak
+MYMETA.*
+MYMETA.yml
+Makefile
+Makefile.old
+blib/
+pm_to_blib
+*.tar.gz
+/File-Open-*/
 *.swp
+untracked/
