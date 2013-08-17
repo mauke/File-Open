@@ -3,12 +3,10 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 
-# Why? For the glory of satan, of course!
-{
-	no warnings qw(redefine);
-	*ExtUtils::MM_Any::_add_requirements_to_meta_v1_4 = \&ExtUtils::MM_Any::_add_requirements_to_meta_v2;
+sub merge_key_into {
+	my ($href, $target, $source) = @_;
+	%{$href->{$target}} = (%{$href->{$target}}, %{delete $href->{$source}});
 }
-
 
 my %opt = (
 	NAME          => 'File::Open',
@@ -20,7 +18,9 @@ my %opt = (
 	PL_FILES => {},
 
 	CONFIGURE_REQUIRES => {
-		'ExtUtils::MakeMaker' => '6.56',
+		'strict' => 0,
+		'warnings' => 0,
+		'ExtUtils::MakeMaker' => '6.48',
 	},
 	BUILD_REQUIRES => {},
 	TEST_REQUIRES => {
@@ -42,7 +42,7 @@ my %opt = (
 	},
 
 	dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-	clean => { FILES => 'File-Open-*' },
+	clean => { FILES    => 'File-Open-*' },
 
 	META_MERGE => {
 		'meta-spec' => { version => 2 },
@@ -60,8 +60,24 @@ if ($] < 5.010) {
 	delete $opt{TEST_REQUIRES}{'open'};
 }
 
-if (ExtUtils::MakeMaker->VERSION < 6.6303) {
-	%{$opt{BUILD_REQUIRES}} = (%{$opt{BUILD_REQUIRES}}, %{delete $opt{TEST_REQUIRES}});
+(my $mm_version = ExtUtils::MakeMaker->VERSION) =~ tr/_//d;
+
+if ($mm_version < 6.67_04) {
+	# Why? For the glory of satan, of course!
+	no warnings qw(redefine);
+	*ExtUtils::MM_Any::_add_requirements_to_meta_v1_4 = \&ExtUtils::MM_Any::_add_requirements_to_meta_v2;
+}
+
+if ($mm_version < 6.63_03) {
+	merge_key_into \%opt, 'BUILD_REQUIRES', 'TEST_REQUIRES';
+}
+
+if ($mm_version < 6.55_01) {
+	merge_key_into \%opt, 'CONFIGURE_REQUIRES', 'BUILD_REQUIRES';
+}
+
+if ($mm_version < 6.51_03) {
+	merge_key_into \%opt, 'PREREQ_PM', 'CONFIGURE_REQUIRES';
 }
 
 WriteMakefile %opt;
