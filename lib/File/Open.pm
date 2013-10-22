@@ -4,7 +4,7 @@ use strict;
 use warnings;
 BEGIN { warnings->import(FATAL => 'layer') if $] >= 5.008; }
 
-our $VERSION = '1.0';
+our $VERSION = '1.0001';
 
 use File::Basename qw(basename);
 use Carp qw(croak);
