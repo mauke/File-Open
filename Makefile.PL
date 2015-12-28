@@ -1,83 +1,121 @@
 use strict;
 use warnings;
 use ExtUtils::MakeMaker;
+use File::Spec ();
+use File::Find ();
 
+sub find_tests_recursively_in {
+    my ($dir) = @_;
+    -d $dir or die "$dir is not a directory";
 
-sub merge_key_into {
-	my ($href, $target, $source) = @_;
-	%{$href->{$target}} = (%{$href->{$target}}, %{delete $href->{$source}});
+    my %seen;
+    my $wanted = sub {
+        /\.t\z/ or return;
+        my $directories = (File::Spec->splitpath($File::Find::name))[1];
+        my $depth = grep $_ ne '', File::Spec->splitdir($directories);
+        $seen{$depth} = 1;
+    };
+    File::Find::find($wanted, $dir);
+
+    join ' ',
+        map { $dir . '/*' x $_ . '.t' }
+        sort { $a <=> $b }
+        keys %seen
 }
 
 my %opt = (
-	NAME          => 'File::Open',
-	AUTHOR        => q{Lukas Mai <l.mai@web.de>},
-	VERSION_FROM  => 'lib/File/Open.pm',
-	ABSTRACT_FROM => 'lib/File/Open.pm',
+    NAME   => 'File::Open',
+    AUTHOR => q{Lukas Mai <l.mai@web.de>},
 
-	LICENSE => 'perl',
-	PL_FILES => {},
+    CONFIGURE_REQUIRES => {},
+    BUILD_REQUIRES => {},
+    TEST_REQUIRES => {
+        'File::Spec'  => 0,
+        'File::Temp'  => '0.19',
+        'IO::Handle'  => 0,
+        'Test::Fatal' => 0,
+        'Test::More'  => 0,
+        $] < 5.010 ? () : (
+            'open'    => 0,
+        ),
+    },
+    PREREQ_PM => {
+        'Carp'           => 0,
+        'Errno'          => 0,
+        'Exporter'       => 0,
+        'Fcntl'          => 0,
+        'File::Basename' => 0,
+        'strict'         => 0,
+        'warnings'       => 0,
+    },
 
-	CONFIGURE_REQUIRES => {
-		'strict' => 0,
-		'warnings' => 0,
-		'ExtUtils::MakeMaker' => '6.48',
-	},
-	BUILD_REQUIRES => {},
-	TEST_REQUIRES => {
-		'File::Spec'  => 0,
-		'File::Temp'  => '0.19',
-		'IO::Handle'  => 0,
-		'Test::Fatal' => 0,
-		'Test::More'  => 0,
-		'open'        => 0,
-	},
-	PREREQ_PM => {
-		'Carp'           => 0,
-		'Errno'          => 0,
-		'Exporter'       => 0,
-		'Fcntl'          => 0,
-		'File::Basename' => 0,
-		'strict'         => 0,
-		'warnings'       => 0,
-	},
+    test => { TESTS => find_tests_recursively_in('t') },
 
-	dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-	clean => { FILES    => 'File-Open-*' },
-
-	META_MERGE => {
-		'meta-spec' => { version => 2 },
-		'resources' => {
-			repository => {
-				url  => 'git://github.com/mauke/File-Open.git',
-				web  => 'https://github.com/mauke/File-Open',
-				type => 'git',
-			},
-		},
-	},
+    META_MERGE => { dynamic_config => 1 },
 );
 
-if ($] < 5.010) {
-	delete $opt{TEST_REQUIRES}{'open'};
+{
+    $opt{LICENSE} ||= 'perl';
+    $opt{PL_FILES} ||= {};
+
+    $opt{CONFIGURE_REQUIRES}{strict}                ||= 0;
+    $opt{CONFIGURE_REQUIRES}{warnings}              ||= 0;
+    $opt{CONFIGURE_REQUIRES}{'ExtUtils::MakeMaker'} ||= '6.48';
+    $opt{CONFIGURE_REQUIRES}{'File::Find'}          ||= 0;
+    $opt{CONFIGURE_REQUIRES}{'File::Spec'}          ||= 0;
+
+    my $module_file = $opt{NAME};
+    $module_file =~ s!::!/!g;
+    $module_file = "lib/$module_file.pm";
+
+    $opt{VERSION_FROM}  ||= $module_file;
+    $opt{ABSTRACT_FROM} ||= $module_file;
+
+    $opt{DISTNAME} ||= do {
+        my $name = $opt{NAME};
+        $name =~ s!::!-!g;
+        $name
+    };
+
+    $opt{clean}{FILES} ||= "$opt{DISTNAME}-*";
+
+    $opt{dist}{COMPRESS} ||= 'gzip -9f';
+    $opt{dist}{SUFFIX}   ||= '.gz';
+
+    $opt{META_MERGE}{'meta-spec'}{version} ||= 2;
+    $opt{META_MERGE}{dynamic_config} ||= 0;
+
+    my $github_account = 'mauke';
+    my $github = "github.com/$github_account/$opt{DISTNAME}";
+    $opt{META_MERGE}{resources}{repository}{type} ||= 'git';
+    $opt{META_MERGE}{resources}{repository}{url}  ||= "git://$github";
+    $opt{META_MERGE}{resources}{repository}{web}  ||= "https://$github";
 }
+
+(do 'maint/eumm-fixup.pl' || die $@ || $!)->(\%opt) if !-f 'META.yml';
 
 (my $mm_version = ExtUtils::MakeMaker->VERSION) =~ tr/_//d;
 
 if ($mm_version < 6.67_04) {
-	# Why? For the glory of satan, of course!
-	no warnings qw(redefine);
-	*ExtUtils::MM_Any::_add_requirements_to_meta_v1_4 = \&ExtUtils::MM_Any::_add_requirements_to_meta_v2;
+    # Why? For the glory of satan, of course!
+    no warnings qw(redefine);
+    *ExtUtils::MM_Any::_add_requirements_to_meta_v1_4 = \&ExtUtils::MM_Any::_add_requirements_to_meta_v2;
 }
 
-if ($mm_version < 6.63_03) {
-	merge_key_into \%opt, 'BUILD_REQUIRES', 'TEST_REQUIRES';
-}
+{
+    my $merge_key_into = sub {
+        my ($target, $source) = @_;
+        %{$opt{$target}} = (%{$opt{$target}}, %{delete $opt{$source}});
+    };
 
-if ($mm_version < 6.55_01) {
-	merge_key_into \%opt, 'CONFIGURE_REQUIRES', 'BUILD_REQUIRES';
-}
+    $merge_key_into->('BUILD_REQUIRES', 'TEST_REQUIRES')
+        if $mm_version < 6.63_03;
 
-if ($mm_version < 6.51_03) {
-	merge_key_into \%opt, 'PREREQ_PM', 'CONFIGURE_REQUIRES';
+    $merge_key_into->('CONFIGURE_REQUIRES', 'BUILD_REQUIRES')
+        if $mm_version < 6.55_01;
+
+    $merge_key_into->('PREREQ_PM', 'CONFIGURE_REQUIRES')
+        if $mm_version < 6.51_03;
 }
 
 WriteMakefile %opt;

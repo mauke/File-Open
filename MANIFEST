@@ -11,3 +11,4 @@ t/null.t
 t/open-func.t
 t/open-meth.t
 t/pollute.t
+xt/pod.t
