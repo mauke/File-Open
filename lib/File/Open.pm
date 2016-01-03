@@ -15,109 +15,109 @@ use Exporter qw(import);
 our @EXPORT_OK = qw(fopen fopen_nothrow fsysopen fsysopen_nothrow);
 
 sub _mode {
-	map { $_ => $_[0] } @_
+    map { $_ => $_[0] } @_
 }
 
 my %modemap = (
-	_mode(qw[<   r ]),
-	_mode(qw[>   w ]),
-	_mode(qw[>>  a ]),
-	_mode(qw[+<  r+]),
-	_mode(qw[+>  w+]),
-	_mode(qw[+>> a+]),
+    _mode(qw[<   r ]),
+    _mode(qw[>   w ]),
+    _mode(qw[>>  a ]),
+    _mode(qw[+<  r+]),
+    _mode(qw[+>  w+]),
+    _mode(qw[+>> a+]),
 );
 
 sub _open {
-	my ($func, $file, $mode, $layers) = @_;
-	@_ < 2 and croak "Not enough arguments for $func";
-	@_ > 4 and croak "Too many arguments for $func";
-	$mode = '<' if !defined $mode;
+    my ($func, $file, $mode, $layers) = @_;
+    @_ < 2 and croak "Not enough arguments for $func";
+    @_ > 4 and croak "Too many arguments for $func";
+    $mode = '<' if !defined $mode;
 
-	my $binary = $mode =~ s/(?<=.)b//;
-	my $emode = $modemap{$mode} or croak "Unknown $func() mode '$mode'";
+    my $binary = $mode =~ s/(?<=.)b//;
+    my $emode = $modemap{$mode} or croak "Unknown $func() mode '$mode'";
 
-	if ($file =~ /\0/) {
-		$! = Errno::ENOENT() if exists &Errno::ENOENT;
-		return undef;
-	}
+    if ($file =~ /\0/) {
+        $! = Errno::ENOENT() if exists &Errno::ENOENT;
+        return undef;
+    }
 
-	unless (defined $layers) {
-		# grab our caller's 'use open' settings
-		my $hints = (caller 1)[10];
-		my $key = $emode =~ />/ ? 'open>' : 'open<';
-		$layers = $hints->{$key};
-	}
+    unless (defined $layers) {
+        # grab our caller's 'use open' settings
+        my $hints = (caller 1)[10];
+        my $key = $emode =~ />/ ? 'open>' : 'open<';
+        $layers = $hints->{$key};
+    }
 
-	open my $fh, $emode . (defined $layers ? " $layers" : ''), $file or return undef;
-	binmode $fh if $binary;
-	$fh
+    open my $fh, $emode . (defined $layers ? " $layers" : ''), $file or return undef;
+    binmode $fh if $binary;
+    $fh
 }
 
 sub fopen_nothrow {
-	_open('fopen_nothrow', @_)
+    _open('fopen_nothrow', @_)
 }
 
 my $prog = basename $0;
 
 sub fopen {
-	_open('fopen', @_) || die "$prog: $_[0]: $!\n"
+    _open('fopen', @_) || die "$prog: $_[0]: $!\n"
 }
 
 sub _sysopen {
-	my ($func, $file, $mode, $flags) = @_;
-	@_ < 3 and croak "Not enough arguments for $func";
-	@_ > 4 and croak "Too many arguments for $func";
+    my ($func, $file, $mode, $flags) = @_;
+    @_ < 3 and croak "Not enough arguments for $func";
+    @_ > 4 and croak "Too many arguments for $func";
 
-	my $emode =
-		$mode eq 'r'  ? Fcntl::O_RDONLY() :
-		$mode eq 'w'  ? Fcntl::O_WRONLY() :
-		$mode eq 'rw' ? Fcntl::O_RDWR()   :
-		croak "Unknown $func() mode '$mode'"
-	;
-	$flags = {} if !defined $flags;
+    my $emode =
+        $mode eq 'r'  ? Fcntl::O_RDONLY() :
+        $mode eq 'w'  ? Fcntl::O_WRONLY() :
+        $mode eq 'rw' ? Fcntl::O_RDWR()   :
+        croak "Unknown $func() mode '$mode'"
+    ;
+    $flags = {} if !defined $flags;
 
-	my $perms = 0;
+    my $perms = 0;
 
-	for my $k (keys %$flags) {
-		my $v = !!$flags->{$k};
-		$emode |=
-			$k eq 'creat' ?
-				defined $flags->{$k} ? do {
-					$perms = $flags->{$k};
-					Fcntl::O_CREAT()
-				} :
-				0
-			:
-			$k eq 'append'    ? $v && Fcntl::O_APPEND()    :
-			$k eq 'async'     ? $v && Fcntl::O_ASYNC()     :
-			$k eq 'direct'    ? $v && Fcntl::O_DIRECT()    :
-			$k eq 'directory' ? $v && Fcntl::O_DIRECTORY() :
-			$k eq 'excl'      ? $v && Fcntl::O_EXCL()      :
-			$k eq 'noatime'   ? $v && Fcntl::O_NOATIME()   :
-			$k eq 'noctty'    ? $v && Fcntl::O_NOCTTY()    :
-			$k eq 'nofollow'  ? $v && Fcntl::O_NOFOLLOW()  :
-			$k eq 'nonblock'  ? $v && Fcntl::O_NONBLOCK()  :
-			$k eq 'sync'      ? $v && Fcntl::O_SYNC()      :
-			$k eq 'trunc'     ? $v && Fcntl::O_TRUNC()     :
-			croak "Unknown $func() flag '$k'"
-		;
-	}
+    for my $k (keys %$flags) {
+        my $v = !!$flags->{$k};
+        $emode |=
+            $k eq 'creat' ?
+                defined $flags->{$k} ? do {
+                    $perms = $flags->{$k};
+                    Fcntl::O_CREAT()
+                } :
+                0
+            :
+            $k eq 'append'    ? $v && Fcntl::O_APPEND()    :
+            $k eq 'async'     ? $v && Fcntl::O_ASYNC()     :
+            $k eq 'direct'    ? $v && Fcntl::O_DIRECT()    :
+            $k eq 'directory' ? $v && Fcntl::O_DIRECTORY() :
+            $k eq 'excl'      ? $v && Fcntl::O_EXCL()      :
+            $k eq 'noatime'   ? $v && Fcntl::O_NOATIME()   :
+            $k eq 'noctty'    ? $v && Fcntl::O_NOCTTY()    :
+            $k eq 'nofollow'  ? $v && Fcntl::O_NOFOLLOW()  :
+            $k eq 'nonblock'  ? $v && Fcntl::O_NONBLOCK()  :
+            $k eq 'sync'      ? $v && Fcntl::O_SYNC()      :
+            $k eq 'trunc'     ? $v && Fcntl::O_TRUNC()     :
+            croak "Unknown $func() flag '$k'"
+        ;
+    }
 
-	if ($file =~ /\0/) {
-		$! = Errno::ENOENT() if exists &Errno::ENOENT;
-		return undef;
-	}
+    if ($file =~ /\0/) {
+        $! = Errno::ENOENT() if exists &Errno::ENOENT;
+        return undef;
+    }
 
-	sysopen my $fh, $file, $emode, $perms or return undef;
-	$fh
+    sysopen my $fh, $file, $emode, $perms or return undef;
+    $fh
 }
 
 sub fsysopen_nothrow {
-	_sysopen('fsysopen_nothrow', @_)
+    _sysopen('fsysopen_nothrow', @_)
 }
 
 sub fsysopen {
-	_sysopen('fsysopen', @_) || die "$prog: $_[0]: $!\n"
+    _sysopen('fsysopen', @_) || die "$prog: $_[0]: $!\n"
 }
 
 
