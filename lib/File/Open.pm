@@ -10,7 +10,7 @@ use File::Basename qw(basename);
 use Carp qw(croak);
 use Fcntl ();
 use Errno ();
-use Exporter qw(import);
+use Exporter 5.57 qw(import);
 
 our @EXPORT_OK = qw(fopen fopen_nothrow fsysopen fsysopen_nothrow);
 
