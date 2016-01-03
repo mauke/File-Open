@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-return (
+return {
     NAME   => 'File::Open',
     AUTHOR => q{Lukas Mai <l.mai@web.de>},
 
@@ -33,4 +33,4 @@ return (
     META_MERGE => { dynamic_config => 1 },
 
     bonus => { github => 'mauke' },
-);
+};
