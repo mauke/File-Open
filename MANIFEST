@@ -2,6 +2,7 @@ Changes
 MANIFEST
 MANIFEST.SKIP
 Makefile.PL
+Makefile_PL_settings
 README
 lib/File/Open.pm
 t/00-load.t
