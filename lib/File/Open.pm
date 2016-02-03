@@ -4,7 +4,7 @@ use strict;
 use warnings;
 BEGIN { warnings->import(FATAL => 'layer') if $] >= 5.008; }
 
-our $VERSION = '1.0001_01';
+our $VERSION = '1.0001_02';
 $VERSION = eval $VERSION;
 
 use File::Basename qw(basename);
@@ -398,7 +398,7 @@ Lukas Mai, C<< <l.mai at web.de> >>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2011, 2013 Lukas Mai.
+Copyright 2011, 2013, 2016 Lukas Mai.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
