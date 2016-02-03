@@ -1,13 +1,13 @@
 use warnings;
 use strict;
 
-use Test::More tests => 89;
+use Test::More tests => 91;
 
 use File::Spec qw(tempfile);
 use File::Temp;
 use Test::Fatal;
 
-use File::Open qw(fsysopen_nothrow fopen_nothrow fsysopen fopen);
+use File::Open qw(fsysopen_nothrow fopen_nothrow fsysopen fopen fopendir);
 
 my $DIR = File::Temp->newdir('F_O_test.XXXXXX', CLEANUP => 1, EXLOCK => 0, TMPDIR => 1);
 -w $DIR or BAIL_OUT "$DIR: I can't test open() without a writeable temp directory";
@@ -93,6 +93,10 @@ unlink $scratch;
     is $data, "$nofile\n$token\n$scratch\n";
     ok close $fh;
 }
+{
+    my $basename = (File::Spec->splitpath($scratch))[-1];
+    ok grep $_ eq $basename, readdir fopendir $DIR;
+}
 unlink $scratch;
 
 {
@@ -116,6 +120,10 @@ unlink $scratch;
     my $data = do {local $/; readline $fh};
     is $data, "$nofile\n$token\n$scratch\n";
     ok close $fh;
+}
+{
+    my $basename = (File::Spec->splitpath($scratch))[-1];
+    ok grep $_ eq $basename, readdir fopendir $DIR;
 }
 unlink $scratch;
 

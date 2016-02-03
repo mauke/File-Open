@@ -1,6 +1,6 @@
 File-Open
 
-wrap open/sysopen and give them a nice and simple interface
+wrap open/sysopen/opendir and give them a nice and simple interface
 
 
 INSTALLATION

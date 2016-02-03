@@ -1,12 +1,16 @@
-use warnings;
 use strict;
+use warnings;
 
-use Test::More tests => 78;
+use Test::More tests => 82;
 
 use Test::Fatal;
 use File::Spec;
 
-use File::Open qw(fopen fopen_nothrow fsysopen fsysopen_nothrow);
+use File::Open qw(
+    fopen    fopen_nothrow
+    fsysopen fsysopen_nothrow
+    fopendir fopendir_nothrow
+);
 
 my $file = File::Spec->catfile(File::Spec->tmpdir, 'AAAAAAAA');
 
@@ -17,6 +21,8 @@ like $_, qr/^Not enough arguments / for
     exception { fsysopen_nothrow },
     exception { fsysopen $file },
     exception { fsysopen_nothrow $file },
+    exception { fopendir },
+    exception { fopendir_nothrow },
 ;
 
 like $_, qr/^Too many arguments / for
@@ -24,6 +30,8 @@ like $_, qr/^Too many arguments / for
     exception { fopen_nothrow 1, 2, 3, 4 },
     exception { fsysopen 1, 2, 3, 4 },
     exception { fsysopen_nothrow 1, 2, 3, 4 },
+    exception { fopendir 1, 2 },
+    exception { fopendir_nothrow 1, 2 },
 ;
 
 like $_, qr/^Unknown fopen\(\) mode / for

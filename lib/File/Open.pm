@@ -13,7 +13,11 @@ use Fcntl ();
 use Errno ();
 use Exporter 5.57 qw(import);
 
-our @EXPORT_OK = qw(fopen fopen_nothrow fsysopen fsysopen_nothrow);
+our @EXPORT_OK = qw(
+    fopen    fopen_nothrow
+    fsysopen fsysopen_nothrow
+    fopendir fopendir_nothrow
+);
 
 sub _mode {
     map { $_ => $_[0] } @_
@@ -121,6 +125,27 @@ sub fsysopen {
     _sysopen('fsysopen', @_) || die "$prog: $_[0]: $!\n"
 }
 
+sub _opendir {
+    my ($func, $dir) = @_;
+    @_ < 2 and croak "Not enough arguments for $func";
+    @_ > 2 and croak "Too many arguments for $func";
+
+    if ($dir =~ /\0/) {
+        $! = Errno::ENOENT() if exists &Errno::ENOENT;
+        return undef;
+    }
+
+    opendir my $dh, $dir or return undef;
+    $dh
+}
+
+sub fopendir_nothrow {
+    _opendir('fopendir_nothrow', @_)
+}
+
+sub fopendir {
+    _opendir('fopendir', @_) || die "$prog: $_[0]: $!\n"
+}
 
 'ok'
 
@@ -128,11 +153,15 @@ __END__
 
 =head1 NAME
 
-File::Open - wrap open/sysopen and give them a nice and simple interface
+File::Open - wrap open/sysopen/opendir and give them a nice and simple interface
 
 =head1 SYNOPSIS
 
- use File::Open qw(fopen fopen_nothrow fsysopen fsysopen_nothrow);
+ use File::Open qw(
+     fopen    fopen_nothrow
+     fsysopen fsysopen_nothrow
+     fopendir fopendir_nothrow
+ );
 
  my $fh = fopen $file;
  my $fh = fopen $file, $mode;
@@ -147,6 +176,10 @@ File::Open - wrap open/sysopen and give them a nice and simple interface
 
  my $fh = fsysopen_nothrow $file, $mode or die "$0: $file: $!\n";
  my $fh = fsysopen_nothrow $file, $mode, \%flags or die "$0: $file: $!\n";
+
+ my $dh = fopendir $dir;
+
+ my $dh = fopendir_nothrow $dir or die "$0: $dir: $!\n";
 
 =head1 EXAMPLES
 
@@ -164,11 +197,17 @@ File::Open - wrap open/sysopen and give them a nice and simple interface
  my $lock_fh = fsysopen $lock_file, 'w', { creat => 0644 };
  flock $lock_fh, LOCK_EX or die "$0: $lock_file: $!\n";
 
+ my @entries = readdir fopendir '.';
+
 =head1 DESCRIPTION
 
-This module provides convenience wrappers around L<open|perlfunc/open> and
-L<sysopen|perlfunc/sysopen> for opening simple files. Nothing is exported by
-default; you have to specify every function you want to import explicitly.
+This module provides convenience wrappers around
+L<C<open>|perlfunc/open FILEHANDLE,EXPR> and
+L<C<sysopen>|perlfunc/sysopen FILEHANDLE,FILENAME,MODE>
+for opening simple files and a wrapper around
+L<C<opendir>|perlfunc/opendir DIRHANDLE,EXPR> for opening directories. Nothing
+is exported by default; you have to specify every function you want to import
+explicitly.
 
 =head2 Functions
 
@@ -217,14 +256,15 @@ Open the file for appending (like C<'a'>) but also allow reads.
 =back
 
 In addition you can append a C<'b'> to each of the mode strings listed above.
-This will cause L<binmode|perlfunc/binmode> to be called on the filehandle.
+This will cause L<C<binmode>|perlfunc/binmode FILEHANDLE, LAYER> to be called
+on the filehandle.
 
 If you don't specify a MODE, it defaults to C<'r'>.
 
 If you pass LAYERS, C<fopen> will combine it with the open mode in the
-underlying L<open|perlfunc/open> call. This gives you greater control than the
-simple C<'b'> in MODE (which is equivalent to passing C<:raw> as LAYERS). For
-example, to read from a UTF-8 file:
+underlying L<C<open>|perlfunc/open FILEHANDLE,EXPR> call. This gives you
+greater control than the simple C<'b'> in MODE (which is equivalent to passing
+C<:raw> as LAYERS). For example, to read from a UTF-8 file:
 
   my $fh = fopen $file, 'r', ':encoding(UTF-8)';
   # does
@@ -241,7 +281,7 @@ encoding names, respectively.
 If you don't pass LAYERS, C<fopen> will use the default layers set via
 C<use open ...>, if any (see L<open>). Default layers aren't supported on old
 perls (i.e. anything before 5.10.0); on those you'll have to pass an explicit
-LAYERS argument.
+LAYERS argument if you want to use encodings.
 
 =item fopen_nothrow FILE
 
@@ -256,7 +296,8 @@ returns C<undef>.
 
 =item fsysopen FILE, MODE, FLAGS
 
-Uses the more low-level interface of L<sysopen|perlfunc/sysopen> to open FILE.
+Uses the more low-level interface of
+L<C<sysopen>|perlfunc/sysopen FILEHANDLE,FILENAME,MODE> to open FILE.
 If it succeeds, it returns a filehandle; if it fails, it throws an exception of
 the form C<"$program: $filename: $!\n">.
 
@@ -269,7 +310,7 @@ hash keys are strings (specifying the flag) and the values are booleans
 (indicating whether the flag should be off (default) or on) - with one
 exception. The exception is the C<'creat'> flag; if set, its value must be a
 number that specifies the permissions of the newly created file. See
-L<perlfunc/umask> for details.
+L<perlfunc/umask EXPR> for details.
 
 The following flags are recognized:
 
@@ -309,8 +350,10 @@ try to specify a non-existent flag.
 
 =item fsysopen_nothrow FILE, MODE, FLAGS
 
-Works exactly like L<fsysopen|/"fsysopen FILE, MODE"> but if the sysopen fails
+Works exactly like L<C<fsysopen>|/fsysopen FILE, MODE> but if the sysopen fails
 it simply returns C<undef>.
+
+=item fopendir DIR
 
 =back
 
@@ -340,9 +383,10 @@ method calls instead of functions:
 
 =head1 SEE ALSO
 
-L<perlfunc/open>,
-L<perlfunc/binmode>,
-L<perlfunc/sysopen>,
+L<perlfunc/open FILEHANDLE,EXPR>,
+L<perlfunc/binmode FILEHANDLE, LAYER>,
+L<perlfunc/sysopen FILEHANDLE,FILENAME,MODE>,
+L<perlfunc/opendir DIRHANDLE,EXPR>,
 L<perlopentut>,
 L<IO::Handle>,
 L<Fcntl>,
