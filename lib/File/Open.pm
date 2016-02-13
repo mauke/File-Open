@@ -11,7 +11,7 @@ use File::Basename qw(basename);
 use Carp qw(croak);
 use Fcntl ();
 use Errno ();
-use Exporter 5.57 qw(import);
+use Exporter (); BEGIN { our @ISA = 'Exporter'; }
 
 our @EXPORT_OK = qw(
     fopen    fopen_nothrow
