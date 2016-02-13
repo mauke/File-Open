@@ -28,8 +28,6 @@ return {
         'warnings'       => 0,
     },
 
-    test => { TESTS => find_tests_recursively_in('t') },
-
     META_MERGE => { dynamic_config => 1 },
 
     bonus => { github => 'mauke' },
