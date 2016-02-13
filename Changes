@@ -1,5 +1,10 @@
 Revision history for File-Open
 
+1.0101  2016-02-13
+        Implement fopendir().
+        Fix hyperlinks in documentation.
+        Don't use Exporter features that exist in 5.57+ only.
+
 1.0001  2013-10-22
         Add some examples to documentation.
 
