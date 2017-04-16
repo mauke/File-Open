@@ -1,5 +1,8 @@
 Revision history for File-Open
 
+1.0102  2017-04-16
+        Don't rely on '.' in @INC.
+
 1.0101  2016-02-13
         Implement fopendir().
         Fix hyperlinks in documentation.
