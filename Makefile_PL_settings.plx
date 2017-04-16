@@ -1,4 +1,3 @@
-# vi:set ft=perl:
 use strict;
 use warnings;
 
@@ -26,6 +25,9 @@ return {
         'File::Basename' => 0,
         'strict'         => 0,
         'warnings'       => 0,
+    },
+    DEVELOP_REQUIRES => {
+        'Test::Pod' => 1.22,
     },
 
     META_MERGE => { dynamic_config => 1 },
