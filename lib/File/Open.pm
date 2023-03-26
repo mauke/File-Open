@@ -189,6 +189,11 @@ File::Open - wrap open/sysopen/opendir and give them a nice and simple interface
 =head1 EXAMPLES
 
     sub slurp {
+        local $/;
+        readline $_[0]
+    }
+
+    my $contents = slurp fopen 'input.txt';
 
     print { fopen 'output.txt', 'w' } "hello, world!\n";
     fopen('output.txt', 'a')->print("mtfnpy\n");  # handles are IO::Handle objects
@@ -263,8 +268,8 @@ If you don't specify a I<MODE>, it defaults to C<'r'>.
 
 If you pass I<LAYERS>, C<fopen> will combine it with the open mode in the
 underlying L<C<open>|perlfunc/open FILEHANDLE,EXPR> call. This gives you
-greater control than the simple C<'b'> in MODE (which is equivalent to passing
-C<:raw> as I<LAYERS>). For example, to read from a UTF-8 file:
+greater control than the simple C<'b'> in I<MODE> (which is equivalent to
+passing C<:raw> as I<LAYERS>). For example, to read from a UTF-8 file:
 
     my $fh = fopen $file, 'r', ':encoding(UTF-8)';
     # does

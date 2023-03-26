@@ -36,6 +36,11 @@ my $dh = fopendir_nothrow $dir or die "$0: $dir: $!\n";
 
 ```perl
 sub slurp {
+    local $/;
+    readline $_[0]
+}
+
+my $contents = slurp fopen 'input.txt';
 
 print { fopen 'output.txt', 'w' } "hello, world!\n";
 fopen('output.txt', 'a')->print("mtfnpy\n");  # handles are IO::Handle objects
@@ -103,8 +108,8 @@ explicitly.
 
     If you pass _LAYERS_, `fopen` will combine it with the open mode in the
     underlying [`open`](https://metacpan.org/pod/perlfunc#open-FILEHANDLE-EXPR) call. This gives you
-    greater control than the simple `'b'` in MODE (which is equivalent to passing
-    `:raw` as _LAYERS_). For example, to read from a UTF-8 file:
+    greater control than the simple `'b'` in _MODE_ (which is equivalent to
+    passing `:raw` as _LAYERS_). For example, to read from a UTF-8 file:
 
     ```perl
     my $fh = fopen $file, 'r', ':encoding(UTF-8)';
