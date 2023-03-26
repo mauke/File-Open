@@ -2,9 +2,9 @@ package File::Open;
 
 use strict;
 use warnings;
-BEGIN { warnings->import(FATAL => 'layer') if $] >= 5.008; }
+BEGIN { warnings->import(FATAL => 'layer') if $^V ge v5.8.0; }
 
-our $VERSION = '1.0102';
+our $VERSION = '1.0103';
 
 use File::Basename qw(basename);
 use Carp qw(croak);
