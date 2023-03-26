@@ -134,8 +134,8 @@ explicitly.
 - fopen\_nothrow FILE, MODE
 - fopen\_nothrow FILE, MODE, LAYERS
 
-    Works exactly like [fopen](#fopen-file), but if the underlying `open` fails,
-    it simply returns `undef`.
+    Works exactly like [`fopen`](#fopen-file), but if the underlying `open`
+    fails, it simply returns `undef`.
 
 - fsysopen FILE, MODE
 - fsysopen FILE, MODE, FLAGS
@@ -223,8 +223,8 @@ explicitly.
 
 - fopendir\_nothrow DIR
 
-    Works exactly like ["fopendir DIR" in fopendir](https://metacpan.org/pod/fopendir#fopendir-DIR), but if the underlying `opendir`
-    fails, it simply returns `undef`.
+    Works exactly like [`fopendir`](#fopendir-dir), but if the underlying
+    `opendir` fails, it simply returns `undef`.
 
 ## Methods
 

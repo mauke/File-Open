@@ -294,8 +294,8 @@ I<LAYERS> argument if you want to use encodings.
 
 =item fopen_nothrow FILE, MODE, LAYERS
 
-Works exactly like L<fopen|/"fopen FILE">, but if the underlying C<open> fails,
-it simply returns C<undef>.
+Works exactly like L<C<fopen>|/"fopen FILE">, but if the underlying C<open>
+fails, it simply returns C<undef>.
 
 =item fsysopen FILE, MODE
 
@@ -389,8 +389,8 @@ fails, it throws an exception of the form C<"$program: $dirname: $!\n">.
 
 =item fopendir_nothrow DIR
 
-Works exactly like L<fopendir/"fopendir DIR">, but if the underlying C<opendir>
-fails, it simply returns C<undef>.
+Works exactly like L<C<fopendir>|/"fopendir DIR">, but if the underlying
+C<opendir> fails, it simply returns C<undef>.
 
 =back
 
