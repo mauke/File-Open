@@ -4,7 +4,6 @@ Makefile.PL
 Makefile_PL_settings.plx
 MANIFEST
 MANIFEST.SKIP
-t/00-load.t
 t/corners.t
 t/layers.t
 t/null.t
