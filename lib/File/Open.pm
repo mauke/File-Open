@@ -377,6 +377,14 @@ C<sysopen> fails, it simply returns C<undef>.
 
 =item fopendir DIR
 
+Opens I<DIR> and returns a directory handle. If the underlying C<opendir>
+fails, it throws an exception of the form C<"$program: $dirname: $!\n">.
+
+=item fopendir_nothrow DIR
+
+Works exactly like L<fopendir/"fopendir DIR">, but if the underlying C<opendir>
+fails, it simply returns C<undef>.
+
 =back
 
 =head2 Methods
