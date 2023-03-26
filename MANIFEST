@@ -1,10 +1,9 @@
 Changes
-MANIFEST
-MANIFEST.SKIP
+lib/File/Open.pm
 Makefile.PL
 Makefile_PL_settings.plx
-README
-lib/File/Open.pm
+MANIFEST
+MANIFEST.SKIP
 t/00-load.t
 t/corners.t
 t/layers.t

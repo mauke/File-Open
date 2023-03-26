@@ -150,6 +150,8 @@ sub fopendir {
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 File::Open - wrap open/sysopen/opendir and give them a nice and simple interface
@@ -391,16 +393,51 @@ L<IO::Handle>,
 L<Fcntl>,
 L<open(2)>
 
+=begin :README
+
+=head1 INSTALLATION
+
+To install this module, run the following commands:
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+=head1 SUPPORT AND DOCUMENTATION
+
+After installing, you can find documentation for this module with the
+perldoc command.
+
+    perldoc File::Open
+
+You can also look for information at:
+
+=over
+
+=item *
+
+RT, CPAN's request tracker:
+L<https://rt.cpan.org/Dist/Display.html?Name=File-Open>
+
+=item *
+
+MetaCPAN: L<https://metacpan.org/pod/File::Open>
+
+=back
+
+=end :README
+
 =head1 AUTHOR
 
 Lukas Mai, C<< <l.mai at web.de> >>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2011, 2013, 2016 Lukas Mai.
+Copyright 2011, 2013, 2016, 2023 Lukas Mai.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
 by the Free Software Foundation; or the Artistic License.
 
-See L<http://dev.perl.org/licenses/> for more information.
+See L<https://dev.perl.org/licenses/> for more information.

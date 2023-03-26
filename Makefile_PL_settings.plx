@@ -32,5 +32,5 @@ return {
 
     META_MERGE => { dynamic_config => 1 },
 
-    bonus => { github => 'mauke' },
+    REPOSITORY => [ github => 'mauke' ],
 };
