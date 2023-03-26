@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/mauke/File-Open/badge.svg?branch=main)](https://coveralls.io/github/mauke/File-Open?branch=main)
+
 # NAME
 
 File::Open - wrap open/sysopen/opendir and give them a nice and simple interface
